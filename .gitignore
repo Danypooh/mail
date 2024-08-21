@@ -1,0 +1,47 @@
+# Python specific
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+*.manifest
+*.spec
+
+# Django specific
+*.log
+*.pot
+*.mo
+*.sqlite3
+db.sqlite3
+local_settings.py
+
+# Media files
+media/
+
+# Static files
+staticfiles/
+static/
+
+# Django migrations
+**/migrations/*
+!**/migrations/__init__.py
+
+# Environment variables
+.env
+*.env
+
+# VSCode specific
+.vscode/
+
+# Windows specific
+Thumbs.db
+*.bak
+*.swp
+*.swo
+.DS_Store
+ehthumbs.db
