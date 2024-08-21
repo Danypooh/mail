@@ -69,10 +69,7 @@ def compose(request):
             email.recipients.add(recipient)
         email.save()
 
-    return JsonResponse({
-        "message": "Email sent successfully.", 
-        "redirect_url": reverse("mailbox", args=["sent"])
-        }, status=201)
+    return JsonResponse({"message": "Email sent successfully."}, status=201)
 
 
 @login_required
