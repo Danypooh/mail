@@ -19,6 +19,7 @@ function compose_email() {
   // Show compose view and hide other views
   document.querySelector("#emails-view").style.display = "none";
   document.querySelector("#compose-view").style.display = "block";
+  document.querySelector("#read-view").style.display = "none";
 
   // Clear out composition fields
   document.querySelector("#compose-recipients").value = "";
@@ -62,10 +63,107 @@ function send_email(event) {
     .catch((error) => console.error("Error:", error));
 }
 
+function update_read_status(email_id) {
+  const url = `/emails/${email_id}`;
+
+  fetch(url, {
+    method: "PUT",
+    body: JSON.stringify({
+      read: true,
+    }),
+  });
+}
+
+function create_read_email_layout(email) {
+  const emailDetail = document.createElement("div");
+  emailDetail.className = "card";
+
+  emailDetail.innerHTML = `
+   <div class="card-header bg-light d-flex justify-content-between">
+   <div>
+    <h5 class="mb-1"><strong>Subject:</strong> ${email.subject}</h5>
+    <p class="mb-1"><strong>From:</strong> ${email.sender}</p>
+    <p class="mb-1"><strong>To:</strong> ${email.recipients.join(", ")}</p>
+   </div>
+   <p class="text-muted mb-0"><strong>${email.timestamp}</strong></p>
+  </div>
+  <div class="card-body">
+    <p>${email.body.replace(/\n/g, "<br>")}</p>
+  </div>
+`;
+
+  return emailDetail;
+}
+
+function load_email(email_id) {
+  update_read_status(email_id);
+
+  document.querySelector("#emails-view").style.display = "none";
+  document.querySelector("#read-view").style.display = "block";
+
+  const readView = document.querySelector("#read-view");
+  readView.innerHTML = "";
+
+  const url = `/emails/${email_id}`;
+
+  fetch(url)
+    .then((response) => response.json())
+    .then((email) => {
+      console.log(email);
+      const mail = create_read_email_layout(email);
+      readView.appendChild(mail);
+      console.log(readView);
+    })
+    .catch((error) => console.error("Error:", error));
+}
+
+function create_email_layout(email) {
+  const mail = document.createElement("a");
+  mail.addEventListener("click", () => load_email(email.id));
+  mail.className = "list-group-item list-group-item-action mb-2 mail";
+  mail.style.cursor = "pointer";
+
+  if (email.read) {
+    mail.classList.remove("unreaded");
+    mail.classList.add("readed");
+  } else {
+    mail.classList.remove("readed");
+    mail.classList.add("unreaded");
+  }
+
+  mail.innerHTML = `
+  <h5 class="mb-1"> Subject: ${email.subject}</h5>
+  <p class="mb-1"><strong> From: </strong> ${email.sender}</p>
+  <p class="mb-1"><strong> Time: </strong> ${email.timestamp}</p>
+  `;
+
+  return mail;
+}
+
+function get_mailbox(mailbox) {
+  const mailsList = document.querySelector("#mails-list");
+  const url = `/emails/${mailbox}`;
+
+  // Show the mailbox mails
+  fetch(url)
+    .then((response) => response.json())
+    .then((emails) => {
+      // Iterate over each email in the array
+      emails.forEach((email) => {
+        const mail = create_email_layout(email);
+        mailsList.appendChild(mail);
+      });
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}
+
 function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector("#emails-view").style.display = "block";
   document.querySelector("#compose-view").style.display = "none";
+  document.querySelector("#read-view").style.display = "none";
 
   // Show the mailbox name
   const emailsView = document.querySelector("#emails-view");
@@ -80,35 +178,8 @@ function load_mailbox(mailbox) {
 
   const mailsList = document.createElement("div");
   mailsList.className = "list-group";
+  mailsList.id = "mails-list";
   mails.appendChild(mailsList);
 
-  const url = `/emails/${mailbox}`;
-
-  // Show the mailbox mails
-  fetch(url)
-    .then((response) => response.json())
-    .then((emails) => {
-      // Iterate over each email in the array
-      emails.forEach((email) => {
-        const mail = document.createElement("a");
-        mail.className = "list-group-item list-group-item-action mb-2 mail";
-        mail.href = "#";
-        mail.style.cursor = "pointer";
-
-        mail.read === true
-          ? mail.classList.add("readed")
-          : mail.classList.add("unreaded");
-
-        mail.innerHTML = `
-        <h5 class="mb-1"> Subject: ${email.subject}</h5>
-        <p class="mb-1"><strong> From: </strong> ${email.sender}</p>
-        <p class="mb-1"><strong> Time: </strong> ${email.timestamp}</p>
-        `;
-
-        mailsList.appendChild(mail);
-      });
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+  get_mailbox(mailbox);
 }
