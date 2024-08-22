@@ -24,8 +24,6 @@ local_settings.py
 media/
 
 # Static files
-staticfiles/
-static/
 
 # Django migrations
 **/migrations/*
