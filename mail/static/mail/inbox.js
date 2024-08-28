@@ -63,6 +63,20 @@ function send_email(event) {
     .catch((error) => console.error("Error:", error));
 }
 
+function update_archive_status(email_id, archiveStatus) {
+  const url = `/emails/${email_id}`;
+
+  fetch(url, {
+    method: "PUT",
+    body: JSON.stringify({
+      archived: !archiveStatus,
+    }),
+  });
+
+  const currentMailbox = document.querySelector("#emails-view").dataset.mailbox;
+  get_mailbox(currentMailbox);
+}
+
 function update_read_status(email_id) {
   const url = `/emails/${email_id}`;
 
@@ -109,17 +123,14 @@ function load_email(email_id) {
   fetch(url)
     .then((response) => response.json())
     .then((email) => {
-      console.log(email);
       const mail = create_read_email_layout(email);
       readView.appendChild(mail);
-      console.log(readView);
     })
     .catch((error) => console.error("Error:", error));
 }
 
 function create_email_layout(email) {
-  const mail = document.createElement("a");
-  mail.addEventListener("click", () => load_email(email.id));
+  const mail = document.createElement("div");
   mail.className = "list-group-item list-group-item-action mb-2 mail";
   mail.style.cursor = "pointer";
 
@@ -132,9 +143,19 @@ function create_email_layout(email) {
   }
 
   mail.innerHTML = `
-  <h5 class="mb-1"> Subject: ${email.subject}</h5>
-  <p class="mb-1"><strong> From: </strong> ${email.sender}</p>
-  <p class="mb-1"><strong> Time: </strong> ${email.timestamp}</p>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-1">Subject: ${email.subject}</h5>
+      <button class="btn btn-secondary" onclick="load_email(${
+        email.id
+      })">View</button>
+      <button class="btn btn-secondary" onclick="update_archive_status(${
+        email.id
+      }, ${email.archived})">${
+    email.archived ? "Unarchive" : "Archive"
+  }</button>
+    </div>
+    <p class="mb-1"><strong>From: </strong> ${email.sender}</p>
+    <p class="mb-1"><strong>Time: </strong> ${email.timestamp}</p>
   `;
 
   return mail;
@@ -143,6 +164,8 @@ function create_email_layout(email) {
 function get_mailbox(mailbox) {
   const mailsList = document.querySelector("#mails-list");
   const url = `/emails/${mailbox}`;
+
+  mailsList.innerHTML = "";
 
   // Show the mailbox mails
   fetch(url)
@@ -167,6 +190,7 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   const emailsView = document.querySelector("#emails-view");
+  emailsView.dataset.mailbox = mailbox;
   emailsView.innerHTML = `<h3 class="my-4">${
     mailbox.charAt(0).toUpperCase() + mailbox.slice(1)
   }</h3>`;
