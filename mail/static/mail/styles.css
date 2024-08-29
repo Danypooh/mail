@@ -13,3 +13,18 @@ textarea {
 .unreaded {
   background-color: #fffff0;
 }
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.email {
+  animation: fadeOut 0.5s forwards;
+  animation-play-state: paused;
+}
